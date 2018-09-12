@@ -1,0 +1,13 @@
+# Books
+pdfs
+
+# Screenshots
+*.png
+
+# Cache
+*.pyc
+__pycache__
+
+# Editor
+.vs
+.vscode
