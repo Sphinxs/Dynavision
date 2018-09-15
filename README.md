@@ -1,11 +1,10 @@
-
 #### Dynavision
 
-> :house: Computer vision (glasses) in Python 3 with Sk Image, Scipy, Numpy, Matplot ...
+> :house: Computer vision in Python 3
 
 #### Setup
 
-To run the codes install [pyenv](https://github.com/pyenv/pyenv) and then install Anaconda
+To run install [pyenv](https://github.com/pyenv/pyenv) and Anaconda
 
 ```shell
 pyenv install anaconda3-5.2.0
@@ -17,3 +16,8 @@ Set the Anaconda to global or local scope
 pyenv global anaconda3-5.2.0
 ```
 
+#### Run
+
+```shell
+python l00_e00.py
+```
