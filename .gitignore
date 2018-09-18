@@ -1,8 +1,9 @@
-# Books
+# Pdfs
 pdfs
 
 # Screenshots
 *.png
+*.txt
 
 # Cache
 *.pyc

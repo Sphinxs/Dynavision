@@ -82,11 +82,14 @@ r_values = random.sample(range(20, 341), 16)
 
 squads = split(camera, 4, 4)
 
+count = 0
+
 for img, degrees in zip(squads, r_values):
+    imsave(f'fotografo_{degrees:.2f}.png', ndimage.rotate(squads[count], r_values[count], reshape=False))
 
-    pass
+    count += 1
 
-    imsave(f'fotografo_{degrees:.2f}.png', img)
+    # imsave(f'fotografo_{degrees:.2f}.png', img)
 
 
 # Plot all squads
@@ -116,7 +119,8 @@ for line in range(0, 4):
 
         # Normal image hist
 
-        ax3[line, col].hist(squads[count].flatten(), bins=256, weights=np.ones(squads[count].ravel().shape) / float(squads[count].size))
+        ax3[line, col].hist(squads[count].flatten(), bins=256, weights=np.ones(
+            squads[count].ravel().shape) / float(squads[count].size))
 
         count += 1
 
