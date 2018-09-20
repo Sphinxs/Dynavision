@@ -1,4 +1,4 @@
-#### Dynavision
+#### Vision
 
 > :house: Computer vision in Python 3
 
