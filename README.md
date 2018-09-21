@@ -1,6 +1,6 @@
 #### Vision
 
-> :house: Computer vision in Python 3
+> :factory: Computer vision in Python 3
 
 #### Setup
 
