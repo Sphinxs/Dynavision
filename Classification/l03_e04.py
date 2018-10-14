@@ -68,14 +68,13 @@ for k, v in predicted.items():
     sn.heatmap(confusion, annot=True, ax=ax[counter])
 
     ax[counter].set_title(k)
-    
-    # ax[counter].axis('off')
-    
+
     counter += 1
 
     # Report
 
-    print(f'\n {k} | \033[34mClassification report\033[m : \n\n{metrics.classification_report(y_test, v)}', end='\n')
+    print(
+        f'\n {k} | \033[34mClassification report\033[m : \n\n{metrics.classification_report(y_test, v)}', end='\n')
 
 pp.show()
 

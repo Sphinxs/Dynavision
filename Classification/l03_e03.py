@@ -67,8 +67,6 @@ for k, v in predicted.items():
 
     ax[counter].set_title(k)
     
-    # ax[counter].axis('off')
-    
     counter += 1
 
     # Report

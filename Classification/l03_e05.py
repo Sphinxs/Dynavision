@@ -8,8 +8,6 @@ import matplotlib.pyplot as pp
 
 import seaborn as sn
 
-from matplotlib.colors import ListedColormap
-
 from pandas import read_excel
 
 
@@ -21,7 +19,7 @@ features = raw.iloc[1:, :6]  # 23
 
 target = raw.Y[1:]
 
-target_names = target.apply(lambda val: 'yes' if val == 1 else 'zero')
+target_names = target.apply(lambda val: 1 if val == 1 else 0)
 
 # Train / test split
 
@@ -76,8 +74,6 @@ for k, v in predicted.items():
     sn.heatmap(confusion, annot=True, ax=ax[counter])
 
     ax[counter].set_title(k)
-
-    # ax[counter].axis('off')
 
     counter += 1
 
