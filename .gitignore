@@ -1,8 +1,9 @@
 # Pdfs
 pdfs
+.pdf
 
 # Screenshots
-*.png
+# *.png
 
 # Cache
 *.pyc
