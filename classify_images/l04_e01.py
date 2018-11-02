@@ -26,6 +26,8 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.ensemble import RandomForestClassifier
 
+from json import dumps
+
 # Load M Peg 7
 
 mpeg7Path = './data/mpeg7'
@@ -215,3 +217,19 @@ for k, v in predicted.items():
     counter += 1
 
 pp.show()
+
+# Best models
+
+print(dumps(
+    dict(
+        reversed(
+            sorted(
+                predictedMetrics.items(),
+                key=lambda item: item[1]['accuracy_score']
+            )
+        )
+    ),
+    sort_keys=False,
+    indent=4,
+    separators=(',', ' : ')
+))
