@@ -2,9 +2,15 @@
 pdfs
 .pdf
 
+# Images
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.jpeg
+
 # Cache
 *.pyc
 __pycache__
+.pyenv-version
 
 # Editor
 .vs

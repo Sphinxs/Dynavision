@@ -4,7 +4,7 @@ from models.bayes import Bayes
 
 import seaborn as sn
 
-from sklearn.naive_bayes import GaussianNB
+# from sklearn.naive_bayes import GaussianNB
 
 import matplotlib.pyplot as pp
 
@@ -49,7 +49,8 @@ pp.show()
 
 print(
     f'\n\033[34mClassification report\033[m : \n\n{metrics.classification_report(y_test, predicted)}',
-    end='\n')
+    end='\n'
+)
 
 # Plot train / test
 

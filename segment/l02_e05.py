@@ -11,21 +11,21 @@ import numpy as np
 
 import matplotlib.patches as patches
 
-
-# Load coins image
+# Load coin image
 
 coins = img_as_float(imread('moedas.png'))
 
+# Create masks
 
 masks = [(3, 3), (5, 5), (7, 7), (9, 9)]
 
-images = []  # Images after mean filter applied
+images = []  # Mean filter
 
-therehold = []  # Otsu therehold values
+therehold = []  # Otsu therehold (limiar)
 
-segmented = []  # Images after segmentation using Otsu
+segmented = []  # Images segmented
 
-label = []  # Labels extracted from segmented images
+label = []  # Labels extracted
 
 for mask in masks:
     # Mean filter
@@ -57,8 +57,7 @@ for mask in masks:
     print(
         f'\n\033[31m{cache_l.max()}\033[37m - Elements detected\n')
 
-
-# Plot the images, hist and the segmented image
+# Plot images, hist and segmented image
 
 fix, ax = pp.subplots(4, 3, figsize=(13, 6))
 

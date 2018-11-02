@@ -8,16 +8,13 @@ from matplotlib.colors import ListedColormap
 
 import seaborn as sn
 
-
 # Load Iris dataset
 
 iris = datasets.load_iris()
 
-
 # Get sepal length and width
 
 iris.data = iris.data[:, 0:2]
-
 
 # Train / test split
 
@@ -27,13 +24,11 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
     test_size=0.25
 )  # Data (x_train, y_train) | classes (x_test, y_test)
 
-
 # Knn
 
 model = Knn().fit(x_train, y_train)
 
 predicted = model(x_test)
-
 
 # Confusion matrix
 
@@ -50,7 +45,6 @@ pp.show()
 # Report
 
 print(f'\n\033[34mClassification report\033[m : \n\n{metrics.classification_report(y_test, predicted)}', end='\n')
-
 
 # Plot train / test
 

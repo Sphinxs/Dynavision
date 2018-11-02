@@ -13,7 +13,6 @@ import numpy as np
 
 # imgs = list(filter(re.compile('([-\w]+\.(?:jpg|gif|png))').match, listdir()))
 
-
 def png(item):
     '''
         Checks if string ends with png extension
@@ -32,12 +31,11 @@ def png(item):
         Return
         ------
 
-        File's name if the same endswith png extension
+        File name if the endswith png extension
     '''
 
     if item.endswith('.png'):
         return item
-
 
 names = list(filter(png, os.listdir()))
 
@@ -49,15 +47,15 @@ meta = []
 
 for name, image in zip(names, imgs):
     cache = [
-        image.shape[0],  # lines
-        image.shape[1],  # cols
-        image.max(),  # max intensity
-        image.min(),  # min intensity
-        image.mean(),  # mean intensity
-        # np.median(image),  # median intensity
-        image.std(),  # standard deviation
-        np.sum(image > image.mean()),  # pixels large than std
-        np.sum(image <= image.mean()),  # pixels smaller than std
+        image.shape[0],  # Lines
+        image.shape[1],  # Cols
+        image.max(),  # Max intensity
+        image.min(),  # Min intensity
+        image.mean(),  # Mean intensity
+        # np.median(image),  # Median intensity
+        image.std(),  # Standard deviation
+        np.sum(image > image.mean()),  # Pixels large than std
+        np.sum(image <= image.mean()),  # Pixels smaller than std
     ]
 
     print(cache)

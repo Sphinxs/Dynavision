@@ -7,8 +7,7 @@ import matplotlib.pyplot as pp
 
 import numpy as np
 
-
-# Load coin image and save
+# Load coin image from skimage.data and save it
 
 coins = data.coins()
 
@@ -17,7 +16,6 @@ imsave('moedas.png', coins)
 coins = img_as_float(coins)
 
 processed = [coins]
-
 
 # Image contrast (intensity) widening
 
@@ -29,13 +27,11 @@ imsave('l02_e04_ac.png', processed[1])
 
 imsave('l02_e04_ac27.png', processed[2])
 
-
 # Image equalization
 
 processed.append(exposure.equalize_hist(coins))
 
 imsave('l02_e04_eq.png', processed[3])
-
 
 # Plots all exposure
 

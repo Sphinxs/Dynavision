@@ -10,7 +10,6 @@ import seaborn as sn
 
 from matplotlib.colors import ListedColormap
 
-
 # Load Breast Cancer dataset
 
 breast_cancer = datasets.load_breast_cancer()
@@ -22,7 +21,6 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
     breast_cancer.target,
     test_size=0.20
 )  # Data (x_train, y_train) | classes (x_test, y_test)
-
 
 # Models predicted
 

@@ -1,4 +1,3 @@
-
 from imageio import imread, imsave
 
 from skimage import img_as_float
@@ -11,32 +10,29 @@ import random
 
 from scipy import ndimage
 
-
-# Load image from disk
+# Load image from disk and convert to float
 
 camera = img_as_float(imread('fotografo.png'))
 
-
-# Split images in 4 lines and 4 cols (16 squads)
+# Split image in 4 rows and 4 cols (16 squads)
 
 squads = []
 
-
 def split(img, rows, cols):
     '''
-        Split array in n rows and columns
+        Split image into n rows and n cols
 
         Parameters
         ----------
 
         img:
-            Arbitrary Numpy array
+            Image to be splited (numpy.array)
 
         rows:
-            Number of rows to split the array
+            Number of rows to split the image
 
         cols:
-            Number of cols to split the array
+            Number of cols to split the image
 
         Usage
         -----
@@ -46,7 +42,7 @@ def split(img, rows, cols):
         Return
         ------
 
-        Python list containing the subsets
+        List containing the n quadrants
     '''
 
     cache = []
@@ -59,26 +55,19 @@ def split(img, rows, cols):
         raise Exception(
             f'\nInform a \033[31mNumpy\033[37m array\n\n{str(e)}\n')
 
-    # Count | Next
-
     for c, n in zip(range(0, img_r + 1, img_r // rows), range(img_r // rows, img_r + 1, img_r // rows)):
-
-        # Interator | Forward
-
         for i, f in zip(range(0, img_c + 1, img_c // cols), range(img_c // cols, img_c + 1, img_r // cols)):
             cache.append(img[c:n, i:f])
 
     return cache
 
+# Generate 20 random values to rotate the squads
 
-# Generate 20 values to rotate the squads
-
-random.seed(42)  # 42 Is the answer for everything
+random.seed(42)  # 42 Is the answer for everything ^ - ^
 
 r_values = random.sample(range(20, 341), 16)
 
-
-# Save images with G º
+# Save images
 
 squads = split(camera, 4, 4)
 
@@ -89,8 +78,7 @@ for img, degrees in zip(squads, r_values):
 
     count += 1
 
-    # imsave(f'fotografo_{degrees:.2f}.png', img)
-
+    imsave(f'fotografo_{degrees:.2f}.png', img)
 
 # Plot all squads
 

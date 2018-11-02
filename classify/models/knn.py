@@ -2,17 +2,7 @@ from scipy import spatial
 
 __all__ = ['Knn']
 
-
 class Knn:
-    '''
-        K-Nearest neighbor
-
-        Reference
-        ---------
-
-        [1] CShape analisys and classification : theory and practice. Crc Press, 2000.
-    '''
-
     def fit(self, x_train, y_train):
         '''
             Fit KNN model

@@ -10,7 +10,6 @@ import seaborn as sn
 
 from pandas import read_excel
 
-
 # Load Credit dataset (archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients)
 
 raw = read_excel('credit.xls').dropna()  # fillna()

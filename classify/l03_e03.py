@@ -8,7 +8,6 @@ import matplotlib.pyplot as pp
 
 import seaborn as sn
 
-
 # Load Iris dataset
 
 iris = datasets.load_iris()
@@ -20,7 +19,6 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
     iris.target,
     test_size=0.20
 )  # Data (x_train, y_train) | classes (x_test, y_test)
-
 
 # Models predicted
 

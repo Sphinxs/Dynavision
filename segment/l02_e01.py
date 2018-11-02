@@ -38,17 +38,17 @@ normalized = lambda ax: lambda image: ax.hist(
 
 normalized(ax2)(camera)
 
-# Cut camera image in four parts
+# Split camera image in four parts
 
-def cut(image, rows, cols):
+def split(image, rows, cols):
     '''
-        Cut image into four quadrants
+        Split image into four quadrants
 
         Parameters
         ----------
 
         image:
-            Image to be splited
+            Image to be splited (numpy.array)
 
         rows:
             Amount of rows from image
@@ -59,7 +59,7 @@ def cut(image, rows, cols):
         Usage
         -----
 
-        >>> cut(skimage.data.camera(), 4, 4)
+        >>> split(skimage.data.camera(), 4, 4)
 
         Return
         ------
@@ -74,7 +74,7 @@ def cut(image, rows, cols):
         image[rows // 2:, cols // 2:]  # b-r
     ]
 
-quadrants = cut(camera, camera.shape[0], camera.shape[1])
+quadrants = split(camera, camera.shape[0], camera.shape[1])
 
 for count, item in enumerate(quadrants, 1):
     imwrite(f'fotografo_{count}.png', item)

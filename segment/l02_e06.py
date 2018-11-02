@@ -9,7 +9,6 @@ import numpy as np
 
 from skimage.filters import threshold_otsu
 
-
 # Read all light images
 
 light = []
@@ -18,14 +17,12 @@ for image in listdir(path.join(getcwd(), 'light')):
     if '.png' in image:
         light.append(imread(path.join(getcwd(), 'light', image)))
 
-
 # Apply median filter
 
 light_median = []
 
 for image in light:
     light_median.append(convolve(image, np.ones((3, 3)) / pow(3, 2)))
-
 
 # Apply otsu filter
 
