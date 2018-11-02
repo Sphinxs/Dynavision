@@ -8,13 +8,23 @@ from math import pi
 
 import numpy as np
 
-from sklearn import preprocessing, model_selection
+from sklearn import preprocessing, model_selection, metrics
 
 from scipy.stats import norm
 
 import matplotlib.pyplot as pp
 
-import seaborn as sb
+import seaborn as sn
+
+from sklearn.neighbors import KNeighborsClassifier
+
+from sklearn.naive_bayes import GaussianNB
+
+from sklearn import svm
+
+from sklearn.tree import DecisionTreeClassifier
+
+from sklearn.ensemble import RandomForestClassifier
 
 # Load M Peg 7
 
@@ -49,7 +59,7 @@ for className, imagesDict in mpeg7.items():
 
         # Get properties
 
-        for prop in measure.regionprops(imageLabeled, imageMatrix):
+        for prop in measure.regionprops(imageLabeled, imageMatrix, coordinates='rc'):
             mpeg7Properties[className].update({
                 imageName: [
                     prop.area,
@@ -77,7 +87,7 @@ mpeg7LabelsNames = lp.classes_
 
 # Split dataset
 
-x_train, x_test, y_train, y_test = model_selection.train_test_split(
+x_train, x_test, y_train, y_test = model_selection.train_test_split( # Cross_val_score
     mpeg7Data,
     mpeg7Labels,
     test_size=0.25
@@ -114,10 +124,94 @@ mu, sigma = mpeg7DataNormalized.mean(), mpeg7DataNormalized.std()
 #     color = 'r'
 # )
 
-sb.set()
+sn.set()
 
-ax = sb.distplot(np.random.normal(mu, sigma, 1000))
+ax = sn.distplot(np.random.normal(mu, sigma, 1000))
 
 ax.set_title('Normal Distribution')
+
+# pp.show()
+
+# Classify using KNN, Naive Bayes (Gaussian), Decision Tree, Random Forest and SVM
+
+predicted = {}
+
+# Knn
+
+knn = KNeighborsClassifier(n_neighbors=8)
+
+knn.fit(x_train, y_train)
+
+predicted.update({
+    'K-Nearest Neighbors': knn.predict(x_test) # Y test
+})
+
+# Naive Bayes
+
+bayes = GaussianNB()
+
+bayes.fit(x_train, y_train)
+
+predicted.update({
+    'Naive Bayes': bayes.predict(x_test) # Y Test
+})
+
+# Decision Tree
+
+tree = DecisionTreeClassifier(max_depth=5)
+
+tree.fit(x_train, y_train)
+
+predicted.update({
+    'Decision Tree': tree.predict(x_test) # Y Test
+})
+
+# Random Forest
+
+random = RandomForestClassifier()
+
+random.fit(x_train, y_train)
+
+predicted.update({
+    'Random Forest': random.predict(x_test) # Y
+})
+
+# Svm
+
+svm = svm.SVC()
+
+svm.fit(x_train, y_train)
+
+predicted.update({
+    'Suport Vector Machine': svm.predict(x_test) # Y Test
+})
+
+# Get metrics and plot confusion matrix
+
+fig, ax = pp.subplots(1, len(predicted), figsize=(len(predicted) * 2, 3))
+
+predictedMetrics = {}
+
+counter = 0
+
+for k, v in predicted.items():
+    confusion = metrics.confusion_matrix(y_test, v)
+    
+    sn.heatmap(confusion, annot=True, ax=ax[counter])
+
+    ax[counter].set_title(k)
+    
+    # print(
+    #    f'\n{k} - \033[34mReport\033[m:\n\n{metrics.classification_report(y_test, v)}', end='\n'
+    # )
+
+    predictedMetrics.update({
+        k: {
+            'accuracy_score': metrics.accuracy_score(y_test, v),
+            'jaccard_similarity_score': metrics.jaccard_similarity_score(y_test, v)
+        }
+    })
+
+    counter += 1
 
 pp.show()
