@@ -2,9 +2,6 @@
 pdfs
 .pdf
 
-# Screenshots
-# *.png
-
 # Cache
 *.pyc
 __pycache__
