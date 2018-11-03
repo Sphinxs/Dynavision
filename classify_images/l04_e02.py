@@ -1,35 +1,33 @@
-from skimage import img_as_float
-
-from os import listdir, path
-
-from imageio import imread
-
-import numpy as np
+from os import path, listdir
 
 from sklearn import preprocessing, model_selection
 
-import matplotlib.pyplot as pp
+from skimage import img_as_float
 
-import seaborn as sn
+from imageio import imread
 
 from utils import plot, morphologic, models
 
+import numpy as np
+
 from sys import argv
+
+import matplotlib.pyplot as pp
 
 # Settings
 
-folderName = 'mpeg7'  # flavia, mpeg7
+folderName = 'mpeg7_2'  # flavia_2, mpeg7_2
 
 if len(argv) > 1:
     if argv[1] in ['1', '2']:
         if argv[1] == '1':
-            folderName = 'mpeg7'
+            folderName = 'mpeg7_2'
         elif argv[1] == '2':
-            folderName = 'flavia'
+            folderName = 'flavia_2'
 
 rgb = False
 
-if [folder for folder in ['flavia'] if folderName == folder]:
+if [folder for folder in ['flavia_2'] if folderName == folder]:
     rgb = True
 
 # Load images
@@ -38,22 +36,17 @@ folderPath = './data/' + folderName
 
 folder = {}
 
-for className in listdir(folderPath):
+for imageName in sorted(listdir(folderPath)):
     folder.update(
         {
-            className: {
-                image[:-4]:
-                        img_as_float(imread(path.join(folderPath, className, image)))[:, :, 0]
-                    if rgb else
-                        img_as_float(imread(path.join(folderPath, className, image)))
-                    for image in sorted(listdir(path.join(folderPath, className)))
-            }
+            imageName[:-4]:
+                img_as_float(imread(path.join(folderPath, imageName)))[:, :, 0] if rgb else img_as_float(imread(path.join(folderPath, imageName)))
         }
     )
 
 # Get morphologic properties
 
-properties, propertiesCache, labelsCache = morphologic(folder)
+properties, propertiesCache, labelsCache = morphologic(folder, simple=True)
 
 folderData = np.vstack(propertiesCache)
 
@@ -78,20 +71,6 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
     folderLabels,
     test_size=0.25
 )
-
-# Plot normal distribution
-
-np.random.seed(0)
-
-folderDataNormalized = preprocessing.minmax_scale(folderData)
-
-mu, sigma = folderDataNormalized.mean(), folderDataNormalized.std()
-
-sn.set()
-
-normalDistribution = sn.distplot(np.random.normal(mu, sigma, 1000))
-
-normalDistribution.set_title('Normal Distribution')
 
 # Classify data
 
