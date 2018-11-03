@@ -10,7 +10,7 @@ screenshots/*.jpeg
 # Cache
 *.pyc
 __pycache__
-.pyenv-version
+.python-version
 
 # Editor
 .vs

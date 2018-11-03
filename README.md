@@ -28,7 +28,7 @@ python l00_e00.py
 
 ##### References
 
-Use the resources about to learn about the content apresented here:
+Use the resources below to learn about the content presented here:
 
 - [Scipy lectures](http://www.scipy-lectures.org/)
 - [Math works](https://www.mathworks.com/)

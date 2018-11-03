@@ -79,6 +79,7 @@ for k, v in predicted.items():
     # Report
 
     print(
-        f'\n {k} | \033[34mClassification report\033[m : \n\n{metrics.classification_report(y_test, v)}', end='\n')
+        f'\n{k} - \033[34mReport\033[m:\n\n{metrics.classification_report(y_test, v)}', end='\n'
+    )
 
 pp.show()

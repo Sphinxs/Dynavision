@@ -1,4 +1,6 @@
-from skimage import measure
+from skimage import measure, img_as_float
+
+from skimage.color import rgb2gray
 
 from os import listdir, path
 
@@ -9,8 +11,6 @@ from math import pi
 import numpy as np
 
 from sklearn import preprocessing, model_selection, metrics
-
-from scipy.stats import norm
 
 import matplotlib.pyplot as pp
 
@@ -30,116 +30,118 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 
 from sklearn.gaussian_process.kernels import RBF
 
+from scipy.fftpack import fft, ifft
+
 from json import dumps
 
-# Load M Peg 7
+# Settings
 
-mpeg7Path = './data/mpeg7'
+# It's necessary to have more than one class because the algorithms require it
 
-mpeg7 = {}
+folderName = 'flavia'  # mpeg7, flavia
 
-for className in listdir(mpeg7Path):
-    mpeg7.update(
+# If the image is RGB it's necessary to convert the 3D array to 2D array
+
+rgb = True
+
+# Load Dataset
+
+folderPath = './data/' + folderName
+
+folder = {}
+
+for className in listdir(folderPath):
+    folder.update(
         {
             className: {
-                image: imread(path.join(mpeg7Path, className, image)) for image in sorted(listdir(path.join(mpeg7Path, className)))
+                image[:-4]:
+                    img_as_float(imread(path.join(folderPath, className, image)))[:,:,0] if rgb else img_as_float(imread(path.join(folderPath, className, image)))
+                    for image in sorted(listdir(path.join(folderPath, className)))
             }
         }
     )
 
-# Get morphological properties
+# Get morphological properties (data and labels) and save in a dataset
 
-mpeg7Properties = {}
+folderProperties = {}
 
-mpeg7DataCache = []
+folderPropertiesCache = []
 
-mpeg7LabelsCache = []
+folderLabelsCache = []
 
-for className, imagesDict in mpeg7.items():
-    mpeg7Properties.update({className: {}})
+for className, imagesDict in folder.items():
+    folderProperties.update({className: {}})
 
-    for imageName, imageMatrix in imagesDict.items():
+    for imageName, imageData in imagesDict.items():
         # Get labels
 
-        imageLabeled = measure.label(imageMatrix, background=0)
+        imageLabeled = measure.label(imageData, background=0)
 
         # Get properties
 
-        for prop in measure.regionprops(imageLabeled, imageMatrix, coordinates='rc'):
-            mpeg7Properties[className].update({
+        for prop in measure.regionprops(imageLabeled, imageData, coordinates='rc'):
+            folderProperties[className].update({
                 imageName: [
                     prop.area,
                     prop.eccentricity,
                     prop.mean_intensity,
                     prop.solidity,
-                    (4 * pi * prop.area) / prop.perimeter ** float(2)  # Circularity
+                    # (4 * pi * prop.area) / prop.perimeter ** float(2)  # Circularity
                 ]
             })
 
-            mpeg7DataCache.append(mpeg7Properties[className][imageName])
+            folderPropertiesCache.append(
+                folderProperties[className][imageName])
 
-            mpeg7LabelsCache.append(className)
+            folderLabelsCache.append(className)
+            
+            print('Loop', '\n')
 
-mpeg7Data = np.vstack(mpeg7DataCache)
+folderData = np.vstack(folderPropertiesCache)
 
-
+# Generate labels
 
 lp = preprocessing.LabelEncoder()
 
-lp.fit(mpeg7LabelsCache)
+lp.fit(folderLabelsCache)
 
-mpeg7Labels = lp.transform(mpeg7LabelsCache)
+folderLabels = lp.transform(folderLabelsCache)
 
-mpeg7LabelsNames = lp.classes_
+folderLabelsNames = lp.classes_
 
-# Save dataset
+# Save data and labels
 
 np.savetxt(
-    'mpeg7.txt',
-    np.c_[mpeg7Data.copy(), mpeg7Labels],
+    folderName + '.txt',
+    np.c_[folderData, folderLabels],
     delimiter=',',
-    fmt= '%10.3f',
+    fmt='%10.3f',
     header='Area, eccentricity, mean_intensity, solidity, circularity, label'
 )
 
+# Fourier transformation
+
+fftY = fft(folderData)
+
+invY = ifft(fftY)
+
+# folderData = invY
+
 # Split dataset
 
-x_train, x_test, y_train, y_test = model_selection.train_test_split(  # Cross_val_score
-    mpeg7Data,
-    mpeg7Labels,
+x_train, x_test, y_train, y_test = model_selection.train_test_split(
+    folderData,
+    folderLabels,
     test_size=0.25
-)  # Data x_train / labels y_train
+)
 
 # Normal distribution
-#
-# www.scipy-lectures.org/intro/scipy/auto_examples/plot_normal_distribution.html
-#
-# www.tutorialspoint.com/python/python_normal_distribution.htm
-#
-# docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.normal.html
-#
-# seaborn.pydata.org/generated/seaborn.distplot.html
 
 np.random.seed(0)
 
-mpeg7DataNormalized = preprocessing.minmax_scale(mpeg7Data)
+folderDataNormalized = preprocessing.minmax_scale(folderData)
 
-mu, sigma = mpeg7DataNormalized.mean(), mpeg7DataNormalized.std()
-
-# pp.figure(figsize=(8,4))
-#
-# count, bins, ignored = pp.hist(
-#     np.random.normal(mu, sigma, 1000),
-#     len(mpeg7DataNormalized),
-#     density=True,
-# )
-#
-# pp.plot(bins,
-#     1 / (sigma * np.sqrt(2 * np.pi)) * \
-#          np.exp(- (bins - mu)**2 / (2 * sigma**2)),
-#     linewidth = 1,
-#     color = 'r'
-# )
+mu, sigma = folderDataNormalized.mean(), folderDataNormalized.std()
 
 sn.set()
 
@@ -147,9 +149,9 @@ ax = sn.distplot(np.random.normal(mu, sigma, 1000))
 
 ax.set_title('Normal Distribution')
 
-# pp.show()
+pp.show()
 
-# Classify using KNN, Naive Bayes (Gaussian), Decision Tree, Random Forest and SVM
+# Classify
 
 predicted = {}
 
@@ -160,82 +162,82 @@ gaussian = GaussianProcessClassifier(1.0 * RBF(1.0))
 gaussian.fit(x_train, y_train)
 
 predicted.update({
-    'Gaussian Process Classifier': gaussian.predict(x_test)  # Y test
+    'Gaussian Process': gaussian.predict(x_test)
 })
 
 # Knn
 
-knn = KNeighborsClassifier(n_neighbors=8)
+knn = KNeighborsClassifier(n_neighbors=4)
 
 knn.fit(x_train, y_train)
 
 predicted.update({
-    'K-Nearest Neighbors': knn.predict(x_test)  # Y test
+    'K-Nearest Neighbors': knn.predict(x_test)
 })
 
-# Naive Bayes
+# Gaussian Naive Bayes
 
 bayes = GaussianNB()
 
 bayes.fit(x_train, y_train)
 
 predicted.update({
-    'Naive Bayes': bayes.predict(x_test)  # Y Test
+    'Naive Bayes': bayes.predict(x_test)
 })
 
 # Decision Tree
 
-tree = DecisionTreeClassifier(max_depth=5)
+tree = DecisionTreeClassifier()  # max_depth=5
 
 tree.fit(x_train, y_train)
 
 predicted.update({
-    'Decision Tree': tree.predict(x_test)  # Y Test
+    'Decision Tree': tree.predict(x_test)
 })
 
 # Random Forest
 
-random = RandomForestClassifier()
+random = RandomForestClassifier(n_estimators=20)
 
 random.fit(x_train, y_train)
 
 predicted.update({
-    'Random Forest': random.predict(x_test)  # Y
+    'Random Forest': random.predict(x_test)
 })
 
 # Svm
 
-svm = svm.SVC()
+svm = svm.SVC(gamma='scale')  # 1 / (n_features * X.std())
 
 svm.fit(x_train, y_train)
 
 predicted.update({
-    'Suport Vector Machine': svm.predict(x_test)  # Y Test
+    'Suport Vector Machine': svm.predict(x_test)
 })
 
 # Get metrics and plot confusion matrix
 
 
-def plot(ax, row, figs):
+def plotLine(ax, row, figs):
     '''
-        Plot n figures in a specific row
+        Plot n figures in a row
 
         Parameters
         ----------
 
         ax:
-            Subplot ax to plot the figures
+            Subplot to plot the figures
 
         row:
-            Row to plot the figures
+            Row on subplot to plot the figures
 
         figs:
-            List of figures (key, value)
+            List of figures (tuples -> key, value)
 
         Returns
         -------
 
-        Return a list of metrics from the figures received by the function
+        Metrics from figures received by the function
 
         Usage
         -----
@@ -250,18 +252,23 @@ def plot(ax, row, figs):
     for k, v in figs:
         confusion = metrics.confusion_matrix(y_test, v)
 
-        sn.heatmap(confusion, annot=True, ax=ax[row, counter])
+        sn.heatmap(confusion, annot=True, ax=ax[row, counter], cbar=False)
 
         ax[row, counter].set_title(k)
+
+        ax[row, counter].axis('off')
 
         counter += 1
 
         cache.update({
             k: {
-                'accuracy': metrics.accuracy_score(y_test, v),
-                'jaccard_similarity': metrics.jaccard_similarity_score(y_test, v)
+                'accuracy': metrics.accuracy_score(y_test, v)
             }
         })
+
+        print(
+            f'\n{k} - \033[34mReport\033[m:\n\n{metrics.classification_report(y_test, v)}', end='\n'
+        )
 
     return cache
 
@@ -271,18 +278,18 @@ fig, ax = pp.subplots(2, 3, figsize=(9, 6))
 predictedMetrics = {}
 
 predictedMetrics.update(
-    plot(ax, 0, list(predicted.items())[:3])
+    plotLine(ax, 0, list(predicted.items())[:3])
 )
 
 predictedMetrics.update(
-    plot(ax, 1, list(predicted.items())[3:7])
+    plotLine(ax, 1, list(predicted.items())[3:7])
 )
 
 pp.show()
 
-# Best models
+# List of models
 
-print(dumps(
+print('\n', dumps(
     dict(
         reversed(
             sorted(
@@ -292,6 +299,6 @@ print(dumps(
         )
     ),
     sort_keys=False,
-    indent=4,
-    separators=(',', ' : ')
-))
+    indent=3,
+    separators=('\n', ' : ')
+), '\n')

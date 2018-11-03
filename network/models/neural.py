@@ -12,10 +12,10 @@ def sigmoid(x):
         x:
             The input arrange
 
-        Returns
+        Return
         -------
 
-        Returns the x of the given scalar
+        Return the x of the given scalar
 
         Usage
         -----
@@ -39,7 +39,7 @@ def lost():
 
             None
 
-        Returns
+        Return
         -------
 
         None
@@ -77,7 +77,7 @@ class Neuro:
             y:
                 The shape of the output object
 
-            Returns
+            Return
             -------
 
             None
@@ -107,7 +107,7 @@ class Neuro:
 
             None
 
-            Returns
+            Return
             -------
 
             None
