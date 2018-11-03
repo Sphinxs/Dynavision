@@ -1,3 +1,5 @@
+# Run : python l04_e02.py 1, python l04_e02.py 2
+
 from os import path, listdir
 
 from sklearn import preprocessing, model_selection

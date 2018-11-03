@@ -1,3 +1,5 @@
+# Run : python l04_e01.py 1, python l04_e01.py 2
+ 
 from skimage import img_as_float
 
 from os import listdir, path
