@@ -1,77 +1,68 @@
-# Run : python l04_e01.py 1, python l04_e01.py 2
- 
-from skimage import img_as_float
-
-from os import listdir, path
-
-from imageio import imread
-
-import numpy as np
+from os import path, listdir
 
 from sklearn import preprocessing, model_selection
 
-import matplotlib.pyplot as pp
+from imageio import imread
 
-import seaborn as sn
+from utils import plot, morphologic, models, formatFigure
 
-from utils import plot, morphologic, models
+import numpy as np
 
 from sys import argv
 
-# Settings
+import seaborn
 
-folderName = 'mpeg7'  # flavia, mpeg7
+import matplotlib.pyplot as pp
 
-if len(argv) > 1:
-    if argv[1] in ['1', '2']:
-        if argv[1] == '1':
-            folderName = 'mpeg7'
-        elif argv[1] == '2':
-            folderName = 'flavia'
+# Folder settings
 
-rgb = False
+folderName = ''
 
-if [folder for folder in ['flavia'] if folderName == folder]:
-    rgb = True
+if len(argv) >= 2:
+    if argv[1].lower() in ['flavia', 'mpeg7']:
+        folderName = argv[1]
+    else:
+        print('\n\033[31mError\033[m, invalid folder\n')
+
+        raise SystemExit
+else:
+    print('\n\033[31mError\033[m, inform a folder\n')
+
+    raise SystemExit
+
+folderPath = path.join('./', 'data', folderName)
 
 # Load images
-
-folderPath = './data/' + folderName
 
 folder = {}
 
 for className in listdir(folderPath):
-    folder.update(
-        {
-            className: {
-                image[:-4]:
-                        img_as_float(imread(path.join(folderPath, className, image)))[:, :, 0]
-                    if rgb else
-                        img_as_float(imread(path.join(folderPath, className, image)))
-                    for image in sorted(listdir(path.join(folderPath, className)))
+    folder.update({
+        className: {
+                imageName:
+                    formatFigure(imread(path.join(folderPath, className, imageName)))
+                for imageName in sorted(listdir(path.join(folderPath, className)))
             }
-        }
-    )
+    })
 
-# Get morphologic properties
+## Morphologic properties
 
-properties, propertiesCache, labelsCache = morphologic(folder)
+properties, labels = morphologic(folder)
 
-folderData = np.vstack(propertiesCache)
+folderData = np.vstack(properties)
 
-folderLabels = preprocessing.LabelEncoder().fit_transform(labelsCache)
+folderLabels = preprocessing.LabelEncoder().fit_transform(labels)
+
+# Standard scaler
+
+folderData = preprocessing.StandardScaler().fit_transform(folderData)
 
 # Save data
 
 # np.savetxt(
-#     folderName + '.txt',
+#     ''.join([folderName, '.txt']),
 #     np.c_[folderData, folderLabels],
-#     fmt='%10.5f',
 # )
-
-# Standard scaler (transformada normal)
-
-folderData = preprocessing.StandardScaler().fit_transform(folderData)
 
 # Split data
 
@@ -81,7 +72,9 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
     test_size=0.25
 )
 
-# Plot normal distribution
+# Normal distribution
+
+pp.rcParams['toolbar'] = 'None'
 
 np.random.seed(0)
 
@@ -89,28 +82,24 @@ folderDataNormalized = preprocessing.minmax_scale(folderData)
 
 mu, sigma = folderDataNormalized.mean(), folderDataNormalized.std()
 
-sn.set()
+seaborn.set()
 
-normalDistribution = sn.distplot(np.random.normal(mu, sigma, 1000))
+normalDistribution = seaborn.distplot(np.random.normal(mu, sigma, 1000))
 
 normalDistribution.set_title('Normal Distribution')
 
 # Classify data
 
-predicted = models(x_train, y_train, x_test)
+predicted = models(x_train, y_train, x_test)  # 'Memory error', try to remove images, algorithms or programs from the memory RAM
 
-# Plot confusion matrix
+# Confusion matrix
 
-fig, ax = pp.subplots(2, 3, figsize=(9, 6))
+fig, ax = pp.subplots(2, 4, figsize=(10, 6))
 
-predictedMetrics = {}
+fig.canvas.set_window_title(folderName.capitalize().split('_'))
 
-predictedMetrics.update(
-    plot(ax, 0, list(predicted.items())[:3], y_test)
-)
+plot(ax, 0, list(predicted.items())[:4], y_test)
 
-predictedMetrics.update(
-    plot(ax, 1, list(predicted.items())[3:], y_test)
-)
+plot(ax, 1, list(predicted.items())[4:], y_test)
 
 pp.show()

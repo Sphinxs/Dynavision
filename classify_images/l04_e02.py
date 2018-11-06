@@ -1,14 +1,10 @@
-# Run : python l04_e02.py 1, python l04_e02.py 2
-
 from os import path, listdir
 
 from sklearn import preprocessing, model_selection
 
-from skimage import img_as_float
-
 from imageio import imread
 
-from utils import plot, morphologic, models
+from utils import plot, morphologic, models, formatFigure
 
 import numpy as np
 
@@ -16,55 +12,53 @@ from sys import argv
 
 import matplotlib.pyplot as pp
 
-# Settings
+# Folder settings
 
-folderName = 'mpeg7_2'  # flavia_2, mpeg7_2
+folderName = ''
 
-if len(argv) > 1:
-    if argv[1] in ['1', '2']:
-        if argv[1] == '1':
-            folderName = 'mpeg7_2'
-        elif argv[1] == '2':
-            folderName = 'flavia_2'
+if len(argv) >= 2:
+    if argv[1].lower() in ['flavia_2', 'mpeg7_2']:
+        folderName = argv[1]
+    else:
+        print('\n\033[31mError\033[m, invalid folder\n')
 
-rgb = False
+        raise SystemExit
+else:
+    print('\n\033[31mError\033[m, inform a folder\n')
 
-if [folder for folder in ['flavia_2'] if folderName == folder]:
-    rgb = True
+    raise SystemExit
+
+folderPath = path.join('./', 'data', folderName)
 
 # Load images
-
-folderPath = './data/' + folderName
 
 folder = {}
 
 for imageName in sorted(listdir(folderPath)):
-    folder.update(
-        {
-            imageName[:-4]:
-                img_as_float(imread(path.join(folderPath, imageName)))[:, :, 0] if rgb else img_as_float(imread(path.join(folderPath, imageName)))
-        }
-    )
+    folder.update({
+        imageName: formatFigure(
+            imread(path.join(folderPath, imageName))
+        )
+    })
 
-# Get morphologic properties
+# Morphologic properties
 
-properties, propertiesCache, labelsCache = morphologic(folder, simple=True)
+properties, labels = morphologic(folder, simple=True)
 
-folderData = np.vstack(propertiesCache)
+folderData = np.vstack(properties)
 
-folderLabels = preprocessing.LabelEncoder().fit_transform(labelsCache)
+folderLabels = preprocessing.LabelEncoder().fit_transform(labels)
+
+# Standard scaler
+
+folderData = preprocessing.StandardScaler().fit_transform(folderData)
 
 # Save data
 
 # np.savetxt(
-#     folderName + '.txt',
+#     ''.join([folderName, '.txt']),
 #     np.c_[folderData, folderLabels],
-#     fmt='%10.5f',
 # )
-
-# Standard scaler (transformada normal)
-
-folderData = preprocessing.StandardScaler().fit_transform(folderData)
 
 # Split data
 
@@ -78,18 +72,16 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
 
 predicted = models(x_train, y_train, x_test)
 
-# Plot confusion matrix
+# Confusion matrix
 
-fig, ax = pp.subplots(2, 3, figsize=(9, 6))
+pp.rcParams['toolbar'] = 'None'
 
-predictedMetrics = {}
+fig, ax = pp.subplots(2, 4, figsize=(10, 6))
 
-predictedMetrics.update(
-    plot(ax, 0, list(predicted.items())[:3], y_test)
-)
+fig.canvas.set_window_title(folderName.capitalize().split('_'))
 
-predictedMetrics.update(
-    plot(ax, 1, list(predicted.items())[3:], y_test)
-)
+plot(ax, 0, list(predicted.items())[:4], y_test)
+
+plot(ax, 1, list(predicted.items())[4:], y_test)
 
 pp.show()

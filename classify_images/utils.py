@@ -1,105 +1,115 @@
-def plot(ax, row, figs, y_test):
+def formatFigure(figure):
     '''
-        Plot figures in a row
+        Format figure 2D and 3D (gray, rgb or rgba)
+
+        Parameter
+        ---------
+
+        figure:
+            Image in format of array Numpy
+
+        Return
+        ------
+
+        Figure formated
+    '''
+
+    from skimage import img_as_float
+
+    figure = img_as_float(figure)
+
+    if len(figure.shape) > 2:
+        return segment(figure[:, :, 0])
+
+    return figure
+
+
+def segment(figure):
+    '''
+        Apply Histogram equalize and Otsu filter
+
+        Parameter
+        ---------
+
+        figure:
+            Image in format of array Numpy
+
+        Return
+        ------
+
+        Segmented figure
+    '''
+
+    from skimage.filters import threshold_otsu
+
+    from skimage.exposure import equalize_hist
+
+    return figure > threshold_otsu(equalize_hist(figure))
+
+
+def plot(axe, row, figures, test_labels):
+    '''
+        Plot figures
 
         Parameters
         ----------
 
-        ax:
-            Subplot
+        axe:
+            Matplotlib subplot
 
         row:
-            Row on subplot
+            Subplot's row
 
-        figs:
-            List of tuples (name, data)
+        figures:
+            List of images in format of array Numpy
 
-        y_test:
+        test_labels:
             Test labels
-        
+
         Return
         ------
 
-        Figures ploted in a row of a subplot
+        Figures ploted
     '''
 
     from sklearn import metrics
 
-    import seaborn as sn
+    import seaborn
 
-    counter = 0
+    count = 0
 
-    cache = {}
+    for key, value in figures:
+        confusionMatrix = metrics.confusion_matrix(test_labels, value)
 
-    for k, v in figs:
-        confusion = metrics.confusion_matrix(y_test, v)
-
-        sn.heatmap(confusion, annot=True, ax=ax[row, counter], cbar=False)
-
-        ax[row, counter].set_title(k)
-
-        ax[row, counter].axis('off')
-
-        counter += 1
-
-        cache.update({
-            k: {
-                'accuracy': metrics.accuracy_score(y_test, v)
-            }
-        })
-
-        print(
-            f'\n{k} - \033[31mClassification Report\033[m:\n\n{metrics.classification_report(y_test, v)}\n',
+        seaborn.heatmap(
+            confusionMatrix,
+            annot=True,
+            ax=axe[row, count],
+            cbar=False
         )
 
-    return cache
+        axe[row, count].set_title(key)
 
+        axe[row, count].axis('off')
 
-def printFormated(obj, indent=3, sort_keys=False):
-    '''
-        Formated dict
+        count += 1
 
-        Parameters
-        ----------
-
-        obj:
-            Object to format
-
-        indent:
-            Indentation size
-        
-        sort_keys:
-            Dict keys
-        
-        Return
-        ------
-
-        None
-    '''
-    
-    from json import dumps
-
-    print('\n', dumps(
-        obj,
-        sort_keys=sort_keys,
-        indent=indent,
-        separators=('\n', ' : ')
-    ), '\n')
+        print(f'\n\033[31m{key}\033[m\n\n{metrics.classification_report(test_labels, value)}\n',)
 
 
 def morphologic(folder, simple=False):
     '''
-        Morphological properties from images
+        Morphological properties
 
         Parameters
         ----------
 
         folder:
-            Images data
-        
+            Dict of images in format of array Numpy
+
         simple:
-            Images from one folder
-        
+            Simple reading
+
         Return
         ------
 
@@ -110,158 +120,154 @@ def morphologic(folder, simple=False):
 
     from math import pi
 
-    properties = {}
-    
-    propertiesCache = []
-    
-    labelsCache = []
+    properties = []
+
+    labels = []
 
     if simple:
         for imageName, imageData in folder.items():
-            # Remove alpha
-
-            # imageData[:, :, :3]
-
-            # convert name.png -background black -alpha remove -alpha off name.png
-
-            # Get labels
+            # Labels
             imageLabeled = measure.label(imageData, background=0)
-            
-            # Get properties
+
+            # Properties
             for prop in measure.regionprops(imageLabeled, imageData, coordinates='rc'):
-                properties.update({
-                    imageName: [
+                properties.append([
+                    prop.area,
+                    prop.eccentricity,
+                    prop.mean_intensity,
+                    prop.solidity,
+                    # (4 * pi * prop.area) / prop.perimeter ** 2.0  # Circularity
+                ])
+
+                labels.append(imageName)
+    else:
+        for className, imagesDict in folder.items():
+            for imageName, imageData in imagesDict.items():
+                # Labels
+                imageLabeled = measure.label(imageData, background=0)
+
+                # Properties
+                for prop in measure.regionprops(imageLabeled, imageData, coordinates='rc'):
+                    properties.append([
                         prop.area,
                         prop.eccentricity,
                         prop.mean_intensity,
                         prop.solidity,
                         # (4 * pi * prop.area) / prop.perimeter ** 2.0  # Circularity
-                    ]
-                })
+                    ])
 
-                propertiesCache.append(properties[imageName])
+                    labels.append(imageName)
 
-                labelsCache.append(imageName)
-    else:
-        for className, imagesDict in folder.items():
-            properties.update({className: {}})
-
-            for imageName, imageData in imagesDict.items():
-                # Get labels
-                imageLabeled = measure.label(imageData, background=0)
-
-                # Get properties
-                for prop in measure.regionprops(imageLabeled, imageData, coordinates='rc'):
-                    properties[className].update({
-                        imageName: [
-                            prop.area,
-                            prop.eccentricity,
-                            prop.mean_intensity,
-                            prop.solidity,
-                            # (4 * pi * prop.area) / prop.perimeter ** 2.0  # Circularity
-                        ]
-                    })
-
-                    propertiesCache.append(properties[className][imageName])
-
-                    labelsCache.append(className)
-    
-    return [properties, propertiesCache, labelsCache]
+    return [properties, labels]
 
 
-def models(x_train, y_train, x_test):
+def models(train_data, train_labels, test_data):
     '''
-        Classify data using Sklearn algorithms
+        Classify objects
 
         Parameters
         ----------
 
-        x_train, y_train:
+        train_data, train_labels:
             Train data and train labels
 
-        x_test:
+        test_data:
             Test data
 
         Return
         ------
 
-        Predicted object from various algorithms
+        Prediction by multiple algorithms
     '''
-
-    from sklearn.neighbors import KNeighborsClassifier
-
-    from sklearn.naive_bayes import GaussianNB
-
-    from sklearn import svm
-
-    from sklearn.tree import DecisionTreeClassifier
-
-    from sklearn.ensemble import RandomForestClassifier
 
     from sklearn.gaussian_process import GaussianProcessClassifier
 
     from sklearn.gaussian_process.kernels import RBF
 
-    predicted = {}
+    from sklearn.neighbors import KNeighborsClassifier
+
+    from sklearn.naive_bayes import GaussianNB
+
+    from sklearn.tree import DecisionTreeClassifier
+
+    from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+
+    from sklearn import svm
+
+    from sklearn.neural_network import MLPClassifier
+
+    prediction = {}
 
     # Gaussian Process Classifier
 
-    gaussian = GaussianProcessClassifier(1.0 * RBF(1.0))
-
-    gaussian.fit(x_train, y_train)
-
-    predicted.update({
-        'Gaussian Process Classifier': gaussian.predict(x_test)
+    prediction.update({
+        'Gaussian Process':
+            GaussianProcessClassifier(1.0 * RBF(1.0))
+                .fit(train_data, train_labels)
+                .predict(test_data)
     })
 
-    # Knn
+    # K-Nearest Neighbors
 
-    knn = KNeighborsClassifier(n_neighbors=4)
-
-    knn.fit(x_train, y_train)
-
-    predicted.update({
-        'K-Nearest Neighbors': knn.predict(x_test)
+    prediction.update({
+        'K-Nearest Neighbors':
+            KNeighborsClassifier(n_neighbors=4)
+                .fit(train_data, train_labels)
+                .predict(test_data)
     })
 
     # Gaussian Naive Bayes
 
-    bayes = GaussianNB()
-
-    bayes.fit(x_train, y_train)
-
-    predicted.update({
-        'Gaussian Naive Bayes': bayes.predict(x_test)
+    prediction.update({
+        'Gaussian Naive Bayes':
+            GaussianNB()
+                .fit(train_data, train_labels)
+                .predict(test_data)
     })
 
     # Decision Tree
 
-    tree = DecisionTreeClassifier()
-
-    tree.fit(x_train, y_train)
-
-    predicted.update({
-        'Decision Tree Classifier': tree.predict(x_test)
+    prediction.update({
+        'Decision Tree':
+            DecisionTreeClassifier()
+                .fit(train_data, train_labels)
+                .predict(test_data)
     })
 
     # Random Forest
 
-    random = RandomForestClassifier(n_estimators=20)
-
-    random.fit(x_train, y_train)
-
-    predicted.update({
-        'Random Forest Classifier': random.predict(x_test)
+    prediction.update({
+        'Random Forest':
+            RandomForestClassifier(n_estimators=20)
+                .fit(train_data, train_labels)
+                .predict(test_data)
     })
 
-    # Svm
+    # Ada Boost
 
-    svm = svm.SVC(gamma='scale')  # 1 / (n_features * X.std())
-
-    svm.fit(x_train, y_train)
-
-    predicted.update({
-        'Suport Vector Machine': svm.predict(x_test)
+    prediction.update({
+        'Ada Boost':
+            AdaBoostClassifier()
+                .fit(train_data, train_labels)
+                .predict(test_data)
     })
 
-    return predicted
+    # Suport Vector Machine
+
+    prediction.update({
+        'Suport Vector Machine':
+            svm.SVC(gamma='scale')
+                .fit(train_data, train_labels)
+                .predict(test_data)
+    })
+
+    # Multi-layer Perceptron
+
+    prediction.update({
+        'Multi-layer Perceptron':
+            MLPClassifier(alpha=1)
+                .fit(train_data, train_labels)
+                .predict(test_data)
+    })
+
+    return prediction
