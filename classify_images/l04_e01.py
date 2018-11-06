@@ -76,17 +76,17 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(
 
 pp.rcParams['toolbar'] = 'None'
 
-np.random.seed(0)
+# np.random.seed(0)
 
-folderDataNormalized = preprocessing.minmax_scale(folderData)
+# folderDataNormalized = preprocessing.minmax_scale(folderData)
 
-mu, sigma = folderDataNormalized.mean(), folderDataNormalized.std()
+# mu, sigma = folderDataNormalized.mean(), folderDataNormalized.std()
 
-seaborn.set()
+# seaborn.set()
 
-normalDistribution = seaborn.distplot(np.random.normal(mu, sigma, 1000))
+# normalDistribution = seaborn.distplot(np.random.normal(mu, sigma, 1000))
 
-normalDistribution.set_title('Normal Distribution')
+# normalDistribution.set_title('Normal Distribution')
 
 # Classify data
 
