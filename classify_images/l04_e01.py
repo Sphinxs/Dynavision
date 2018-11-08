@@ -39,7 +39,7 @@ folder = {}
 for className in listdir(folderPath):
     folder.update({
         className: {
-                imageName:
+                imageName[:-4]:
                     formatFigure(imread(path.join(folderPath, className, imageName)))
                 for imageName in sorted(listdir(path.join(folderPath, className)))
             }

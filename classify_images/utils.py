@@ -156,7 +156,7 @@ def morphologic(folder, simple=False):
                         # (4 * pi * prop.area) / prop.perimeter ** 2.0  # Circularity
                     ])
 
-                    labels.append(imageName)
+                    labels.append(className)
 
     return [properties, labels]
 
