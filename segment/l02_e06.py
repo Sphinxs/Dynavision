@@ -1,4 +1,3 @@
-
 from os import path, getcwd, listdir
 
 from imageio import imread, imsave

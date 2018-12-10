@@ -6,11 +6,11 @@ import matplotlib.pyplot as pp
 
 import numpy as np
 
-# Save camera image
+# Load camera image and save it
 
 camera = data.camera()
 
-imwrite('fotografo.png', camera)
+imwrite('photographer.png', camera)
 
 # Show camera image with color bar
 
@@ -20,15 +20,13 @@ pp.imshow(camera, cmap='gray')
 
 pp.colorbar()
 
-# Show hist and camera image with colorbar and without axis
+# Show original camera and it's histogram
 
 fig, (ax1, ax2) = pp.subplots(1, 2, figsize=(8, 3))
 
 ax1.imshow(camera, cmap='gray')
 
 ax1.axis('off')
-
-# pp.colorbar(pp.cm.ScalarMappable(cmap='gray').set_array([0,1]))
 
 normalized = lambda ax: lambda image: ax.hist(
     image.flatten(),
@@ -38,22 +36,22 @@ normalized = lambda ax: lambda image: ax.hist(
 
 normalized(ax2)(camera)
 
-# Split camera image in four parts
+# Split image in four quadrants and save it
 
 def split(image, rows, cols):
     '''
-        Split image into four quadrants
+        Split image in four quadrants
 
         Parameters
         ----------
 
-        image:
-            Image to be splited (numpy.array)
+        image: numpy.array
+            Image matrix to split
 
-        rows:
+        rows: int
             Amount of rows from image
 
-        rows:
+        cols: int
             Amount of columns from image
 
         Usage
@@ -64,7 +62,7 @@ def split(image, rows, cols):
         Return
         ------
 
-        List containing the four quadrants
+        List containing four quadrants from original image
     '''
 
     return [
@@ -77,13 +75,9 @@ def split(image, rows, cols):
 quadrants = split(camera, camera.shape[0], camera.shape[1])
 
 for count, item in enumerate(quadrants, 1):
-    imwrite(f'fotografo_{count}.png', item)
+    imwrite(f'photographer_{count}.png', item)
 
-    # pp.figure()
-
-    # pp.imshow(item, cmap='gray')
-
-# Show camera, hist and quadrants
+# Show camera image, it's hist and image splited in four quadrants
 
 fig, ax = pp.subplots(3, 2)
 
@@ -98,7 +92,5 @@ for r in range(1, 3):
         ax[r, c].imshow(quadrants[count], cmap='gray')
 
         count += 1
-
-# Plot
 
 pp.show()

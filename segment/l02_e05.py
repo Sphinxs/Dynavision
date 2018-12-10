@@ -1,4 +1,3 @@
-
 from imageio import imread, imsave
 
 from scipy.ndimage.filters import convolve
@@ -13,7 +12,7 @@ import matplotlib.patches as patches
 
 # Load coin image
 
-coins = img_as_float(imread('moedas.png'))
+coins = img_as_float(imread('coins.png'))
 
 # Create masks
 
@@ -21,7 +20,7 @@ masks = [(3, 3), (5, 5), (7, 7), (9, 9)]
 
 images = []  # Mean filter
 
-therehold = []  # Otsu therehold (limiar)
+therehold = []  # Otsu therehold
 
 segmented = []  # Images segmented
 
@@ -46,16 +45,15 @@ for mask in masks:
 
     segmented.append(cache_s)
 
-    imsave(f'moedas_{mask[0]}_o-{cache_t:.4f}.png', cache_m)
+    imsave(f'coins_{mask[0]}_o-{cache_t:.4f}.png', cache_m)
 
-    # Label images
+    # Label
 
     cache_l = measure.label(cache_s)
 
     label.append(cache_l)
 
-    print(
-        f'\n\033[31m{cache_l.max()}\033[37m - Elements detected\n')
+    print(f'\n\033[31m{cache_l.max()}\033[37m - Elements detected\n')
 
 # Plot images, hist and segmented image
 
@@ -68,8 +66,7 @@ for count in range(0, 4):
 
     ax[count, 0].set_title(''.join(['Mean', str(masks[count])]))
 
-    ax[count, 1].hist(images[count].ravel(), bins=256, weights=np.ones(
-        images[count].ravel().shape) / float(images[count].size))
+    ax[count, 1].hist(images[count].ravel(), bins=256, weights=np.ones(images[count].ravel().shape) / float(images[count].size))
 
     ax[count, 1].axvline(therehold[count], color='b')
 
@@ -86,13 +83,12 @@ for count in range(0, 4):
     ax.imshow(images[count], cmap='gray')
 
     for region in measure.regionprops(label[count]):
-        # Take large regions
+        # Take regions
 
         if region.area > 50:
             minr, minc, maxr, maxc = region.bbox
 
-            rect = patches.Rectangle((minc, minr), maxc - minc, maxr - minr,
-                                     fill=False, edgecolor='blue')
+            rect = patches.Rectangle((minc, minr), maxc - minc, maxr - minr, fill=False, edgecolor='blue')
 
             ax.add_patch(rect)
 

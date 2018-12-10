@@ -1,4 +1,3 @@
-
 from skimage import data, img_as_float, exposure
 
 from imageio import imsave
@@ -7,17 +6,17 @@ import matplotlib.pyplot as pp
 
 import numpy as np
 
-# Load coin image from skimage.data and save it
+# Load coin image and save it
 
 coins = data.coins()
 
-imsave('moedas.png', coins)
+imsave('coins.png', coins)
 
 coins = img_as_float(coins)
 
 processed = [coins]
 
-# Image contrast (intensity) widening
+# Image contrast widening
 
 processed.append(exposure.rescale_intensity(coins))
 

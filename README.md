@@ -1,10 +1,10 @@
-#### Vision
+## Vision
 
-Computer vision in Python 3. Segment, extract properties and classify images.
+Segment, extract properties and classify images
 
-##### Setup
+### Setup
 
-Install Anaconda 3-5 via pyenv:
+Install Anaconda 3-5 via Py Env:
 
 ```zsh
 pyenv install anaconda3-5.2.0
@@ -16,13 +16,13 @@ Set Anaconda to local project:
 pyenv local anaconda3-5.2.0
 ```
 
-##### Run
+### Run
 
 ```zsh
 python script.py
 ```
 
-##### References
+### References
 
 - [Scipy lectures](http://www.scipy-lectures.org/)
 

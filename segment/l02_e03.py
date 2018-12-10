@@ -1,7 +1,4 @@
-
 import os
-
-# import re
 
 from imageio import imread, imsave
 
@@ -9,33 +6,9 @@ import random
 
 import numpy as np
 
-# Open all images and get their names
+# Open all images generated on previous scripts
 
-# imgs = list(filter(re.compile('([-\w]+\.(?:jpg|gif|png))').match, listdir()))
-
-def png(item):
-    '''
-        Checks if string ends with png extension
-
-        Parameters
-        ----------
-
-        item:
-            File name
-
-        Usage
-        -----
-
-        >>> png('item.png')
-
-        Return
-        ------
-
-        File name if the endswith png extension
-    '''
-
-    if item.endswith('.png'):
-        return item
+png = lambda item: item if item.endswith('.png') else None
 
 names = list(filter(png, os.listdir()))
 
@@ -57,9 +30,7 @@ for name, image in zip(names, imgs):
         np.sum(image > image.mean()),  # Pixels large than std
         np.sum(image <= image.mean()),  # Pixels smaller than std
     ]
-
-    print(cache)
-
+    
     meta.append(cache)
 
     with open(f'{name[:-4]}.txt', 'w') as f:

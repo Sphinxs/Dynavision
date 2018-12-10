@@ -10,29 +10,29 @@ import random
 
 from scipy import ndimage
 
-# Load image from disk and convert to float
+# Load camera image from disk and convert to float
 
-camera = img_as_float(imread('fotografo.png'))
+camera = img_as_float(imread('photographer.png'))
 
-# Split image in 4 rows and 4 cols (16 squads)
+# Split image in 4 rows and 4 cols (16 quadrants)
 
-squads = []
+quadrants = []
 
 def split(img, rows, cols):
     '''
-        Split image into n rows and n cols
+        Split image in n rows and n columns
 
         Parameters
         ----------
 
-        img:
-            Image to be splited (numpy.array)
+        img: numpy.array
+            Image matrix to split
 
-        rows:
-            Number of rows to split the image
+        rows: int
+            Number of rows to split
 
-        cols:
-            Number of cols to split the image
+        cols: int
+            Number of cols to split
 
         Usage
         -----
@@ -42,7 +42,7 @@ def split(img, rows, cols):
         Return
         ------
 
-        List containing the n quadrants
+        List containing n quadrants from original image
     '''
 
     cache = []
@@ -52,8 +52,7 @@ def split(img, rows, cols):
 
         img_c = img.shape[1]
     except Exception as e:
-        raise Exception(
-            f'\nInform a \033[31mNumpy\033[37m array\n\n{str(e)}\n')
+        raise Exception(f'\nInform a \033[31mNumpy\033[37m array\n\n{str(e)}\n')
 
     for c, n in zip(range(0, img_r + 1, img_r // rows), range(img_r // rows, img_r + 1, img_r // rows)):
         for i, f in zip(range(0, img_c + 1, img_c // cols), range(img_c // cols, img_c + 1, img_r // cols)):
@@ -61,26 +60,26 @@ def split(img, rows, cols):
 
     return cache
 
-# Generate 20 random values to rotate the squads
+# Generate twenty values to rotate quadrants
 
-random.seed(42)  # 42 Is the answer for everything ^ - ^
+random.seed(42)
 
 r_values = random.sample(range(20, 341), 16)
 
-# Save images
+# Slipt image and save it's quadrants
 
-squads = split(camera, 4, 4)
+quadrants = split(camera, 4, 4)
 
 count = 0
 
-for img, degrees in zip(squads, r_values):
-    imsave(f'fotografo_{degrees:.2f}.png', ndimage.rotate(squads[count], r_values[count], reshape=False))
+for img, degrees in zip(quadrants, r_values):
+    imsave(f'photographer_{degrees:.2f}.png', ndimage.rotate(quadrants[count], r_values[count], reshape=False))
 
     count += 1
 
-    imsave(f'fotografo_{degrees:.2f}.png', img)
+    imsave(f'photographer_{degrees:.2f}.png', img)
 
-# Plot all squads
+# Show camera image and it's quadrants and histograms
 
 fig1, ax1 = pp.subplots(4, 4)
 
@@ -92,23 +91,21 @@ count = 0
 
 for line in range(0, 4):
     for col in range(0, 4):
-        # Normal image
+        # Original image
 
-        ax1[line, col].imshow(squads[count], cmap='gray')
+        ax1[line, col].imshow(quadrants[count], cmap='gray')
 
         ax1[line, col].axis('off')
 
         # Image rotated
 
-        ax2[line, col].imshow(ndimage.rotate(
-            squads[count], r_values[count], reshape=False), cmap='gray')
+        ax2[line, col].imshow(ndimage.rotate(quadrants[count], r_values[count], reshape=False), cmap='gray')
 
         ax2[line, col].axis('off')
 
-        # Normal image hist
+        # Original image hist
 
-        ax3[line, col].hist(squads[count].flatten(), bins=256, weights=np.ones(
-            squads[count].ravel().shape) / float(squads[count].size))
+        ax3[line, col].hist(quadrants[count].flatten(), bins=256, weights=np.ones(quadrants[count].ravel().shape) / float(quadrants[count].size))
 
         count += 1
 
